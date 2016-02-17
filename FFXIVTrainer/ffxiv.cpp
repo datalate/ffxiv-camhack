@@ -40,11 +40,11 @@ FFXIV::FFXIV(Settings& settings): settings_(&settings) {
 	proc_handle_ = NULL;
 	base_address_ = -1;
 
-	DWORD address_zoom_current_ = 0;
-	DWORD address_zoom_max_ = 0;
+	address_zoom_current_ = 0;
+	address_zoom_max_ = 0;
 
-	float zoom_current_ = 0;
-	float zoom_max_ = 0;
+	zoom_current_ = 0;
+	zoom_max_ = 0;
 }
 
 FFXIV::~FFXIV() {
@@ -128,7 +128,32 @@ bool FFXIV::calculateAddresses() {
 	return true;
 }
 
+void FFXIV::checkGameStatus() {
+	if (!game_found_)
+		return;
+
+	exitCode = 0;
+	GetExitCodeProcess(proc_handle_, &exitCode);
+
+	if (exitCode != STILL_ACTIVE) {
+		std::cout << "Game process exited or something..." << std::endl;
+
+		firstrun_ = true;
+		game_found_ = false;
+
+		base_address_ = -1;
+
+		address_zoom_current_ = 0;
+		address_zoom_max_ = 0;
+
+		zoom_current_ = 0;
+		zoom_max_ = 0;
+	}
+}
+
 void FFXIV::checkValues() {
+	checkGameStatus();
+
 	if (!game_found_)
 		return;
 
@@ -139,10 +164,8 @@ void FFXIV::checkValues() {
 	//std::cout << "Current max zoom value: " << zoom_max_ << std::endl;
 
 	if (zoom_max_ == zoom_max_custom_) {
-		if (firstrun_) {
+		if (firstrun_)
 			std::cout << "The camera has already been adjusted" << std::endl;
-			firstrun_ = false;
-		}
 		else return;
 	} else {
 		std::cout << "Camera not yet adjusted, trying to do that now..." << std::endl;
@@ -159,4 +182,5 @@ void FFXIV::checkValues() {
 	}
 	
 	std::cout << "Now monitoring game..." << std::endl << std::endl;
+	firstrun_ = false;
 }

@@ -29,6 +29,7 @@ private:
 
 	HANDLE proc_handle_;
 	DWORD_PTR base_address_;
+	DWORD exitCode;
 
 	DWORD address_zoom_current_;
 	DWORD address_zoom_max_;
@@ -40,6 +41,7 @@ private:
 	bool firstrun_;
 
 	bool calculateAddresses();
+	void checkGameStatus();
 
 };
 
