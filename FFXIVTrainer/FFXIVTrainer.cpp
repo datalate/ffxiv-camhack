@@ -22,14 +22,107 @@ const float camera_default_new_max = 120;
 
 const char* window_name = "FINAL FANTASY XIV";
 const string process_name = "ffxiv_dx11.exe";
-const string url = "http://miemala.com/ffxiv_memory.txt";
+const string settings_url = "http://miemala.com/ffxiv_memory.txt";
 
+
+struct Settings {
+	DWORD camera_pointer;
+	DWORD offset_current;
+	DWORD offset_max;
+	string version;
+};
 
 size_t write_data(char *ptr, size_t size, size_t nmemb, void *userdata) {
 	std::ostringstream *stream = (std::ostringstream*)userdata;
 	size_t count = size * nmemb;
 	stream->write(ptr, count);
 	return count;
+}
+
+bool getSettings(const string& url, ostringstream& stream) {
+	CURL *curl;
+	CURLcode res;
+
+	curl = curl_easy_init();
+
+	if (!curl) {
+		cout << "Error: unable to load CURL" << endl;
+		return false;
+	}
+
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
+
+	res = curl_easy_perform(curl);
+	if (res != CURLE_OK) {
+		cout << "Error: unable to load memory addresses from " << url << endl;
+		cout << "Try restarting the program..." << endl;
+		return false;
+	}
+
+	curl_easy_cleanup(curl);
+
+	return true;
+}
+
+bool loadSettings(Settings& settings) {
+	ostringstream stream;
+
+	settings.camera_pointer = 0x0;
+	settings.offset_current = 0x0;
+	settings.offset_max = 0x0;
+	settings.version = "";
+
+	if (!getSettings(settings_url, stream)) {
+		return false;
+	}
+
+
+	string::size_type found;
+	string line;
+	istringstream iss(stream.str());
+	while (getline(iss, line)) {
+		stringstream ss;
+		found = string::npos;
+
+		found = line.find("pointer:");
+		if (found != string::npos) {
+			ss << line.erase(0, string("pointer:").length());
+			ss >> hex >> settings.camera_pointer;
+			continue;
+		}
+
+		found = line.find("offset_current:");
+		if (found != string::npos) {
+			ss << line.erase(0, string("offset_current:").length());
+			ss >> hex >> settings.offset_current;
+			continue;
+		}
+
+		found = line.find("offset_max:");
+		if (found != string::npos) {
+			ss << line.erase(0, string("offset_max:").length());
+			ss >> hex >> settings.offset_max;
+			continue;
+		}
+
+		found = line.find("version:");
+		if (found != string::npos) {
+			settings.version = line.erase(0, string("version:").length());
+			continue;
+		}
+	}
+
+	if ((settings.camera_pointer == 0) || (settings.offset_current == 0) ||
+		(settings.offset_max == 0) || (settings.version == "")) {
+
+		cout << "Error: couldn't parse memory addresses" << endl;
+		cout << "Try restarting the program..." << endl;
+		return false;
+	}
+
+	return true;
 }
 
 DWORD_PTR GetModuleBase(HANDLE hProc, string sModuleName)
@@ -60,92 +153,30 @@ DWORD_PTR GetModuleBase(HANDLE hProc, string sModuleName)
 
 int main(int argc, char *argv[])
 {
-	CURL *curl;
-	CURLcode res;
-	ostringstream stream;
-	string curl_data;
-	string line;
-	string version;
-	string::size_type found;
-	DWORD camera_pointer = 0x0;
-	DWORD offset_current = 0x0;
-	DWORD offset_max = 0x0;
 	DWORD pid;
 	DWORD address;
+	DWORD *exitCode;
 	float zoom_current;
 	float zoom_max;
 	float camera_new_max;
 	int result;
+	Settings settings;
 
-	cout << "FFXIV camera zoom hack - extends max range from " << camera_default_max << " to " << camera_default_new_max << endl;
-	cout << "For any errors, try running the process as an administrator" << endl << endl;
+	cout << "FFXIV camera zoom hack - extends max range from "
+		 << camera_default_max << " to " << camera_default_new_max << endl;
+
+	cout << "For any errors, try running the process as an administrator"
+		 << endl << endl;
 
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 
-	curl = curl_easy_init();
-
-	if (!curl) {
-		cout << "Error: unable to load CURL" << endl;
-		curl_global_cleanup();
+	if (!loadSettings(settings)) {
 		cin.ignore();
 		return 1;
 	}
 
-	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
-
-	res = curl_easy_perform(curl);
-	if (res != CURLE_OK) {
-		cout << "Error: unable to load memory addresses from " << url << endl;
-		cout << "Try restarting the program..." << endl;
-		cin.ignore();
-		return 1;
-	}
-
-	curl_easy_cleanup(curl);
-	curl_global_cleanup();
-
-	istringstream iss(stream.str());
-	while (getline(iss, line)) {
-		stringstream ss;
-		found = string::npos;
-
-		found = line.find("pointer:");
-		if (found != string::npos) {
-			ss << line.erase(0, string("pointer:").length());
-			ss >> hex >> camera_pointer;
-			continue;
-		}
-
-		found = line.find("offset_current:");
-		if (found != string::npos) {
-			ss << line.erase(0, string("offset_current:").length());
-			ss >> hex >> offset_current;
-			continue;
-		}
-
-		found = line.find("offset_max:");
-		if (found != string::npos) {
-			ss << line.erase(0, string("offset_max:").length());
-			ss >> hex >> offset_max;
-			continue;
-		}
-		found = line.find("version:");
-		if (found != string::npos) {
-			version = line.erase(0, string("version:").length());
-			continue;
-		}
-	}
-
-	if ((camera_pointer == 0) || (offset_current == 0) || (offset_max == 0)) {
-		cout << "Error: couldn't parse memory addresses from " << url << endl;
-		cout << "Try restarting the program..." << endl;
-		cin.ignore();
-		return 1;
-	}
-
-	cout << "Current memory addresses are updated to work with version " << version << endl;
+	cout << "Current memory addresses are updated to work with version "
+		 << settings.version << endl;
 
 	HWND hwnd = FindWindowA(0, window_name);
 
@@ -159,7 +190,7 @@ int main(int argc, char *argv[])
 
 	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 
-	if (!hProc) {
+	if (hProc == NULL) {
 		cout << "Error: cannot open process" << endl;
 		cin.ignore();
 		return 1;
@@ -177,14 +208,14 @@ int main(int argc, char *argv[])
 	cout << hex << base << endl;
 
 	cout << "Using static pointer address: 0x";
-	cout << camera_pointer << endl;
+	cout << settings.camera_pointer << endl;
 
 	cout << "Searching pointer from address: 0x";
-	cout << hex << (base + camera_pointer) << endl;
+	cout << hex << (base + settings.camera_pointer) << endl;
 
-	if (!ReadProcessMemory(hProc, (void*)(base + camera_pointer), &address, 4, 0)) {
+	if (!ReadProcessMemory(hProc, (void*)(base + settings.camera_pointer), &address, 4, 0)) {
 		cout << "Error: cannot read memory from address 0x";
-		cout << hex << (base + camera_pointer) << endl;
+		cout << hex << (base + settings.camera_pointer) << endl;
 		CloseHandle(hProc);
 		cin.ignore();
 		return 1;
@@ -194,10 +225,10 @@ int main(int argc, char *argv[])
 		cout << "Camera address found: 0x";
 		cout << address << endl << endl;
 
-		ReadProcessMemory(hProc, (void*)(address + offset_current), &zoom_current, 4, 0);
+		ReadProcessMemory(hProc, (void*)(address + settings.offset_current), &zoom_current, 4, 0);
 		cout << "Current zoom value: " << zoom_current << endl;
 
-		ReadProcessMemory(hProc, (void*)(address + offset_max), &zoom_max, 4, 0);
+		ReadProcessMemory(hProc, (void*)(address + settings.offset_max), &zoom_max, 4, 0);
 		cout << "Current max zoom value: " << zoom_max << endl;
 
 		if (zoom_max < camera_default_max) {
@@ -226,7 +257,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			result = WriteProcessMemory(hProc, (void*)(address + offset_max), &camera_new_max, (DWORD)sizeof(camera_new_max), NULL);
+			result = WriteProcessMemory(hProc, (void*)(address + settings.offset_max), &camera_new_max, (DWORD)sizeof(camera_new_max), NULL);
 
 			if (result == 1) {
 				cout << "Successfully set max zoom value to " << camera_new_max << endl;
@@ -242,8 +273,73 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	cout << endl;
+	/*while (true) {
+		Sleep(2000);
 
+		GetExitCodeProcess(hProc, exitCode);
+		if (*exitCode == STILL_ACTIVE) {
+			cout << "process still active" << endl;
+
+			ReadProcessMemory(hProc, (void*)(address + offset_max), &zoom_max, 4, 0);
+			//cout << "Current max zoom value: " << zoom_max << endl;
+
+			if (zoom_max == camera_new_max) {
+				//cout << "The camera has already been adjusted" << endl;
+				zoom_max = camera_new_max;
+			}
+			else
+			{
+				result = WriteProcessMemory(hProc, (void*)(address + offset_max), &camera_new_max, (DWORD)sizeof(camera_new_max), NULL);
+
+				if (result == 1) {
+					cout << "Successfully set max zoom value to " << camera_new_max << endl;
+					zoom_max = camera_new_max;
+				}
+				else
+				{
+					cout << "Error: couldn't write to process memory" << endl;
+					CloseHandle(hProc);
+					cin.ignore();
+					return 1;
+				}
+			}
+
+		}
+		else
+		{
+			cout << "process not running" << endl;
+
+			HWND hwnd = FindWindowA(0, window_name);
+
+			if (hwnd == 0) {
+				cout << "Error: cannot find window" << endl;
+				continue;
+			}
+
+			CloseHandle(hProc);
+
+			GetWindowThreadProcessId(hwnd, &pid);
+
+			HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+
+			if (hProc == NULL) {
+				cout << "Error: cannot open process" << endl;
+				cin.ignore();
+				return 1;
+			}
+
+			DWORD_PTR base = GetModuleBase(hProc, "ffxiv_dx11.exe");
+
+			if (base == -1) {
+				cout << "Error: unable to find process base address" << endl;
+				cin.ignore();
+				return 1;
+			}
+		}
+	}*/
+
+	cout << endl;
+	/*
 	if (RegisterHotKey(NULL, 1, MOD_ALT | MOD_NOREPEAT, 0x42))  //0x42 is 'b'
 	{
 		cout << "Registered a hotkey for toggling max zoom (ALT+B)" << endl;
@@ -281,7 +377,7 @@ int main(int argc, char *argv[])
 
 		}
 	}
-
+	*/
 	CloseHandle(hProc);
 
 	cin.ignore();
