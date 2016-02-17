@@ -121,7 +121,7 @@ bool FFXIV::calculateAddresses() {
 	//std::cout << camera_address << std::endl << std::endl;
 
 	address_zoom_current_ = camera_address + settings_->offset_current;
-	address_zoom_max_ = camera_address + settings_->offset_current;
+	address_zoom_max_ = camera_address + settings_->offset_max;
 
 	std::cout << "Camera addresses calculated successfully" << std::endl;
 
