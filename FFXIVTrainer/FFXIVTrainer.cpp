@@ -1,9 +1,10 @@
 // FFXIVTrainer
 
+#include "settings.h"
+
 #include <iostream>
-#include <sstream>
 #include <string>
-#include <curl/curl.h>
+
 #include "stdafx.h"
 #include "windows.h"
 #include "psapi.h"
@@ -22,108 +23,7 @@ const float camera_default_new_max = 120;
 
 const char* window_name = "FINAL FANTASY XIV";
 const string process_name = "ffxiv_dx11.exe";
-const string settings_url = "http://miemala.com/ffxiv_memory.txt";
 
-
-struct Settings {
-	DWORD camera_pointer;
-	DWORD offset_current;
-	DWORD offset_max;
-	string version;
-};
-
-size_t write_data(char *ptr, size_t size, size_t nmemb, void *userdata) {
-	std::ostringstream *stream = (std::ostringstream*)userdata;
-	size_t count = size * nmemb;
-	stream->write(ptr, count);
-	return count;
-}
-
-bool getSettings(const string& url, ostringstream& stream) {
-	CURL *curl;
-	CURLcode res;
-
-	curl = curl_easy_init();
-
-	if (!curl) {
-		cout << "Error: unable to load CURL" << endl;
-		return false;
-	}
-
-	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
-
-	res = curl_easy_perform(curl);
-	if (res != CURLE_OK) {
-		cout << "Error: unable to load memory addresses from " << url << endl;
-		cout << "Try restarting the program..." << endl;
-		return false;
-	}
-
-	curl_easy_cleanup(curl);
-
-	return true;
-}
-
-bool loadSettings(Settings& settings) {
-	ostringstream stream;
-
-	settings.camera_pointer = 0x0;
-	settings.offset_current = 0x0;
-	settings.offset_max = 0x0;
-	settings.version = "";
-
-	if (!getSettings(settings_url, stream)) {
-		return false;
-	}
-
-
-	string::size_type found;
-	string line;
-	istringstream iss(stream.str());
-	while (getline(iss, line)) {
-		stringstream ss;
-		found = string::npos;
-
-		found = line.find("pointer:");
-		if (found != string::npos) {
-			ss << line.erase(0, string("pointer:").length());
-			ss >> hex >> settings.camera_pointer;
-			continue;
-		}
-
-		found = line.find("offset_current:");
-		if (found != string::npos) {
-			ss << line.erase(0, string("offset_current:").length());
-			ss >> hex >> settings.offset_current;
-			continue;
-		}
-
-		found = line.find("offset_max:");
-		if (found != string::npos) {
-			ss << line.erase(0, string("offset_max:").length());
-			ss >> hex >> settings.offset_max;
-			continue;
-		}
-
-		found = line.find("version:");
-		if (found != string::npos) {
-			settings.version = line.erase(0, string("version:").length());
-			continue;
-		}
-	}
-
-	if ((settings.camera_pointer == 0) || (settings.offset_current == 0) ||
-		(settings.offset_max == 0) || (settings.version == "")) {
-
-		cout << "Error: couldn't parse memory addresses" << endl;
-		cout << "Try restarting the program..." << endl;
-		return false;
-	}
-
-	return true;
-}
 
 DWORD_PTR GetModuleBase(HANDLE hProc, string sModuleName)
 {
@@ -162,13 +62,12 @@ int main(int argc, char *argv[])
 	int result;
 	Settings settings;
 
+
 	cout << "FFXIV camera zoom hack - extends max range from "
 		 << camera_default_max << " to " << camera_default_new_max << endl;
 
 	cout << "For any errors, try running the process as an administrator"
 		 << endl << endl;
-
-	curl_global_init(CURL_GLOBAL_DEFAULT);
 
 	if (!loadSettings(settings)) {
 		cin.ignore();
@@ -177,6 +76,7 @@ int main(int argc, char *argv[])
 
 	cout << "Current memory addresses are updated to work with version "
 		 << settings.version << endl;
+
 
 	HWND hwnd = FindWindowA(0, window_name);
 
