@@ -1,119 +1,57 @@
 // FFXIVTrainer
 
+#include "ffxiv.h"
 #include "settings.h"
 
 #include <iostream>
-#include <string>
-
 #include "stdafx.h"
-#include "windows.h"
-#include "psapi.h"
 
-
-using namespace std;
-
-
-/*const DWORD camera_pointer = 0x14E11B0;
-const DWORD offset_current = 0x108;
-const DWORD offset_max = 0x110;
-const string version = "2015.11.21.0000.0000";*/
-
-const float camera_default_max = 20;
-const float camera_default_new_max = 120;
-
-const char* window_name = "FINAL FANTASY XIV";
-const string process_name = "ffxiv_dx11.exe";
-
-
-DWORD_PTR GetModuleBase(HANDLE hProc, string sModuleName)
-{
-	HMODULE *hModules = NULL;
-	char szBuf[50];
-	DWORD cModules;
-	DWORD_PTR dwBase = -1;
-
-	EnumProcessModules(hProc, hModules, 0, &cModules);
-	hModules = new HMODULE[cModules / sizeof(HMODULE)];
-
-	if (EnumProcessModules(hProc, hModules, cModules / sizeof(HMODULE), &cModules)) {
-		for (int i = 0; i < cModules / sizeof(HMODULE); ++i) {
-			if (GetModuleBaseNameA(hProc, hModules[i], szBuf, sizeof(szBuf))) {
-				if (sModuleName.compare(szBuf) == 0) {
-					dwBase = (DWORD_PTR)hModules[i];
-					break;
-				}
-			}
-		}
-	}
-
-	delete[] hModules;
-
-	return dwBase;
-}
 
 int main(int argc, char *argv[])
 {
-	DWORD pid;
-	DWORD address;
-	DWORD *exitCode;
-	float zoom_current;
-	float zoom_max;
-	float camera_new_max;
-	int result;
 	Settings settings;
+	//DWORD *exitCode;
 
 
-	cout << "FFXIV camera zoom hack - extends max range from "
-		 << camera_default_max << " to " << camera_default_new_max << endl;
+	std::cout << "FFXIV camera zoom hack - extends max range from "
+		 << zoom_max_default_ << " to " << zoom_max_custom_ << std::endl;
 
-	cout << "For any errors, try running the process as an administrator"
-		 << endl << endl;
+	std::cout << "For any errors, try running the process as an administrator"
+		 << std::endl << std::endl;
+
 
 	if (!loadSettings(settings)) {
-		cin.ignore();
+		std::cin.ignore();
 		return 1;
 	}
 
-	cout << "Current memory addresses are updated to work with version "
-		 << settings.version << endl;
+	FFXIV ffxiv(settings);
 
+	while (true) {
+		Sleep(1000);
 
-	HWND hwnd = FindWindowA(0, window_name);
-
-	if (hwnd == 0) {
-		cout << "Error: cannot find window" << endl;
-		cin.ignore();
-		return 1;
+		if (!ffxiv.game_found()) {
+			if (!ffxiv.findGame())
+				continue;
+		} else {
+			ffxiv.checkValues();
+		}
 	}
 
-	GetWindowThreadProcessId(hwnd, &pid);
 
-	HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 
-	if (hProc == NULL) {
-		cout << "Error: cannot open process" << endl;
-		cin.ignore();
-		return 1;
-	}
+	
 
-	DWORD_PTR base = GetModuleBase(hProc, "ffxiv_dx11.exe");
-
-	if (base == -1) {
-		cout << "Error: unable to find process base address" << endl;
-		cin.ignore();
-		return 1;
-	}
-
-	cout << "Process base address: 0x";
+	/*cout << "Process base address: 0x";
 	cout << hex << base << endl;
 
 	cout << "Using static pointer address: 0x";
 	cout << settings.camera_pointer << endl;
 
 	cout << "Searching pointer from address: 0x";
-	cout << hex << (base + settings.camera_pointer) << endl;
+	cout << hex << (base + settings.camera_pointer) << endl;*/
 
-	if (!ReadProcessMemory(hProc, (void*)(base + settings.camera_pointer), &address, 4, 0)) {
+	/*if (!ReadProcessMemory(hProc, (void*)(base + settings.camera_pointer), &address, 4, 0)) {
 		cout << "Error: cannot read memory from address 0x";
 		cout << hex << (base + settings.camera_pointer) << endl;
 		CloseHandle(hProc);
@@ -171,7 +109,7 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 		}
-	}
+	}*/
 
 	/*while (true) {
 		Sleep(2000);
@@ -238,7 +176,6 @@ int main(int argc, char *argv[])
 		}
 	}*/
 
-	cout << endl;
 	/*
 	if (RegisterHotKey(NULL, 1, MOD_ALT | MOD_NOREPEAT, 0x42))  //0x42 is 'b'
 	{
@@ -278,10 +215,8 @@ int main(int argc, char *argv[])
 		}
 	}
 	*/
-	CloseHandle(hProc);
 
-	cin.ignore();
-
+	std::cin.ignore();
     return 0;
 }
 

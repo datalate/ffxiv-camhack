@@ -103,5 +103,8 @@ bool loadSettings(Settings& settings) {
 		return false;
 	}
 
+	std::cout << "Current memory addresses are updated to work with version "
+		<< settings.version << std::endl;
+
 	return true;
 }
