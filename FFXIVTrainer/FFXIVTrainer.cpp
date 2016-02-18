@@ -3,6 +3,7 @@
 #include "ffxiv.h"
 #include "settings.h"
 #include "config.h"
+#include "registry.h"
 
 #include <iostream>
 
@@ -13,7 +14,9 @@ int main(int argc, char *argv[])
 
 	loadConfig(config);
 
-	//registry tricks here
+	if (registryGetAutostart() != config.autostart) {
+		registrySetAutostart(config.autostart, false);
+	}
 
 	std::cout << "FFXIV camera zoom hack - extends max range from "
 		 << zoom_max_default << " to " << config.max_zoom << std::endl;
@@ -37,8 +40,6 @@ int main(int argc, char *argv[])
 				continue;
 		} else {
 			ffxiv.checkValues();
-
-			ffxiv.toggleZoom();
 		}
 	}
 

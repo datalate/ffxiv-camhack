@@ -154,12 +154,14 @@
   <ItemGroup>
     <ClInclude Include="ffxiv.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="registry.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ffxiv.cpp" />
     <ClCompile Include="FFXIVTrainer.cpp" />
+    <ClCompile Include="registry.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="config.cpp" />
   </ItemGroup>
