@@ -5,8 +5,8 @@
 
 
 void loadDefaultConfig(Config& cfg) {
-	cfg.autostart = true;
-	cfg.autostart_hidden = false;
+	cfg.autostart = false;
+	cfg.hide_window = false;
 
 	cfg.max_zoom = 100;
 	
@@ -35,7 +35,7 @@ bool loadConfig(Config& cfg) {
 	}
 
 	if (cfg_file.lookupValue("autostart", cfg.autostart)
-		&& cfg_file.lookupValue("autostart_hidden", cfg.autostart_hidden)
+		&& cfg_file.lookupValue("hide_window", cfg.hide_window)
 		&& cfg_file.lookupValue("max_zoom", cfg.max_zoom)
 		&& cfg_file.lookupValue("toggle", cfg.toggle)
 		&& cfg_file.lookupValue("toggle_key", cfg.toggle_key)

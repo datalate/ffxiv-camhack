@@ -14,6 +14,10 @@ int main(int argc, char *argv[])
 
 	loadConfig(config);
 
+	if (config.hide_window) {
+		FreeConsole());
+	}
+
 	if (registryGetAutostart() != config.autostart) {
 		registrySetAutostart(config.autostart, false);
 	}

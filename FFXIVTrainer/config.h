@@ -5,7 +5,7 @@
 
 struct Config {
 	bool autostart;
-	bool autostart_hidden;
+	bool hide_window;
 
 	int max_zoom;
 

@@ -24,8 +24,11 @@ bool registryGetAutostart() {
 					 NULL, registry_exe_path, &size) != ERROR_SUCCESS) {
 
 		//std::cout << "Error: couldn't get key value" << std::endl;
+		RegCloseKey(hkey);
 		return false;
 	}
+
+	RegCloseKey(hkey);
 
 	//TODO: function returning exe path
 	wchar_t exe_path[MAX_PATH];
@@ -33,6 +36,7 @@ bool registryGetAutostart() {
 
 	if (path_len == 0) {
 		std::cout << "Error: couldn't get file path" << std::endl;
+		RegCloseKey(hkey);
 		return false;
 	}
 
@@ -59,6 +63,7 @@ bool registrySetAutostart(bool start, bool hide) {
 		DWORD path_len = GetModuleFileNameW(NULL, exe_path, MAX_PATH - 1);
 		if (path_len == 0) {
 			std::cout << "Error: couldn't get file path" << std::endl;
+			RegCloseKey(hkey);
 			return false;
 		}
 
@@ -68,24 +73,21 @@ bool registrySetAutostart(bool start, bool hide) {
 			(wcslen(exe_path)) * sizeof(wchar_t)) != ERROR_SUCCESS) {
 
 			std::cout << "Error: couldn't add key to registry" << std::endl;
-			return false;
-		}
-
-		if (hkey != NULL)
-		{
 			RegCloseKey(hkey);
-			hkey = NULL;
+			return false;
 		}
 
 		std::cout << "Successfully enabled autostart!" << std::endl;
 	} else {
 		if (RegDeleteKeyValue(hkey, NULL, TEXT("ffxiv-camhack")) != ERROR_SUCCESS) {
 			std::cout << "Error: couldn't remove key from registry" << std::endl;
+			RegCloseKey(hkey);
 			return false;
 		}
 
 		std::cout << "Successfully disabled autostart!" << std::endl;
 	}
 
+	RegCloseKey(hkey);
 	return true;
 }
