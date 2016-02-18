@@ -11,21 +11,23 @@ int main(int argc, char *argv[])
 	Settings settings;
 	Config config;
 
+	loadConfig(config);
+
+	//registry tricks here
 
 	std::cout << "FFXIV camera zoom hack - extends max range from "
-		 << zoom_max_default_ << " to " << zoom_max_custom_ << std::endl;
+		 << zoom_max_default << " to " << config.max_zoom << std::endl;
 
 	std::cout << "For any errors, try running the process as an administrator"
 		 << std::endl << std::endl;
 
-	loadConfig(config);
 
 	if (!loadSettings(settings)) {
 		std::cin.ignore();
 		return 1;
 	}
 
-	FFXIV ffxiv(settings);
+	FFXIV ffxiv(settings, (float)config.max_zoom);
 
 	while (true) {
 		Sleep(1000);
@@ -35,6 +37,8 @@ int main(int argc, char *argv[])
 				continue;
 		} else {
 			ffxiv.checkValues();
+
+			ffxiv.toggleZoom();
 		}
 	}
 

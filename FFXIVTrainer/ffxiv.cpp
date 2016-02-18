@@ -33,9 +33,10 @@ namespace {
 	}
 }
 
-FFXIV::FFXIV(Settings& settings): settings_(&settings) {
+FFXIV::FFXIV(Settings& settings, float zoom_value): settings_(&settings), zoom_max_custom_(zoom_value) {
 	game_found_ = false;
 	firstrun_ = true;
+	disabled_ = false;
 
 	proc_handle_ = NULL;
 	base_address_ = -1;
@@ -139,6 +140,7 @@ void FFXIV::checkGameStatus() {
 		std::cout << "Game process exited or something..." << std::endl;
 
 		firstrun_ = true;
+		disabled_ = false;
 		game_found_ = false;
 
 		base_address_ = -1;
@@ -163,6 +165,9 @@ void FFXIV::checkValues() {
 	ReadProcessMemory(proc_handle_, (void*)address_zoom_max_, &zoom_max_, 4, 0);
 	//std::cout << "Current max zoom value: " << zoom_max_ << std::endl;
 
+	if (disabled_)
+		return;
+
 	if (zoom_max_ == zoom_max_custom_) {
 		if (firstrun_)
 			std::cout << "The camera has already been adjusted" << std::endl;
@@ -183,4 +188,31 @@ void FFXIV::checkValues() {
 	
 	std::cout << "Now monitoring game..." << std::endl << std::endl;
 	firstrun_ = false;
+}
+
+void FFXIV::toggleZoom() {
+	checkGameStatus();
+
+	if (!game_found_)
+		return;
+
+	int result;
+	ReadProcessMemory(proc_handle_, (void*)address_zoom_max_, &zoom_max_, 4, 0);
+
+	if (zoom_max_ == zoom_max_custom_) {
+		float temp = zoom_max_default;
+
+		result = WriteProcessMemory(proc_handle_, (void*)address_zoom_max_,
+									&temp, (DWORD)sizeof(temp), NULL);
+		disabled_ = true;
+	} else {
+		result = WriteProcessMemory(proc_handle_, (void*)address_zoom_max_,
+									&zoom_max_custom_, (DWORD)sizeof(zoom_max_custom_), NULL);
+		disabled_ = false;
+	}
+
+	if (result != 1)
+		std::cout << "Error: couldn't write to process memory" << std::endl;
+	else
+		std::cout << "Hotkey pressed: toggled zoom value" << std::endl;
 }
