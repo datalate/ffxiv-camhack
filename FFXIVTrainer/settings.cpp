@@ -29,10 +29,13 @@ bool getSettings(const std::string& url, std::ostringstream& stream) {
 	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &stream);
+	curl_easy_setopt(curl, CURLOPT_CAINFO, "cacert.pem");
+	//curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 
 	res = curl_easy_perform(curl);
 	if (res != CURLE_OK) {
-		std::cout << "Error: unable to load memory addresses from " << url << std::endl;
+		std::cout << "Error: unable to load memory addresses: "
+				  << curl_easy_strerror(res) << std::endl;
 		std::cout << "Try restarting the program..." << std::endl;
 
 		curl_easy_cleanup(curl);
