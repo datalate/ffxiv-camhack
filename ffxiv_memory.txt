@@ -1,0 +1,4 @@
+pointer:0x14E31B0
+offset_current:0x108
+offset_max:0x110
+version:3.15

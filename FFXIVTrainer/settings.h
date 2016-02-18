@@ -18,7 +18,7 @@ struct Settings {
 	std::string version;
 };
 
-const std::string settings_url = "http://miemala.com/ffxiv_memory.txt";
+const std::string settings_url = "https://raw.githubusercontent.com/datalate/ffxiv-camhack/master/ffxiv_memory.txt";
 
 
 bool getSettings(const std::string& url, std::ostringstream& stream);
