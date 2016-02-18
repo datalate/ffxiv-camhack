@@ -13,6 +13,7 @@ static const std::string process_name = "ffxiv_dx11.exe";
 static const float zoom_max_default_ = 20;
 static const float zoom_max_custom_ = 120;
 
+
 class FFXIV
 {
 public:

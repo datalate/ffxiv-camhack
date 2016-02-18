@@ -2,13 +2,14 @@
 
 #include "ffxiv.h"
 #include "settings.h"
+#include "config.h"
 
 #include <iostream>
-
 
 int main(int argc, char *argv[])
 {
 	Settings settings;
+	Config config;
 
 
 	std::cout << "FFXIV camera zoom hack - extends max range from "
@@ -17,6 +18,7 @@ int main(int argc, char *argv[])
 	std::cout << "For any errors, try running the process as an administrator"
 		 << std::endl << std::endl;
 
+	loadConfig(config);
 
 	if (!loadSettings(settings)) {
 		std::cin.ignore();
