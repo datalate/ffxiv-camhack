@@ -14,8 +14,6 @@ struct Config {
 	unsigned int toggle_modifier;
 };
 
-static const std::string config_file = "ffxiv.cfg";
-
 
 void loadDefaultConfig(Config& cfg);
 

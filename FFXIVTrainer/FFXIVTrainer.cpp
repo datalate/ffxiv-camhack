@@ -11,11 +11,12 @@ int main(int argc, char *argv[])
 {
 	Settings settings;
 	Config config;
+	MSG msg;
 
 	loadConfig(config);
 
 	if (config.hide_window) {
-		FreeConsole());
+		FreeConsole();
 	}
 
 	if (registryGetAutostart() != config.autostart) {
@@ -36,28 +37,33 @@ int main(int argc, char *argv[])
 
 	FFXIV ffxiv(settings, (float)config.max_zoom);
 
-	while (true) {
-		Sleep(1000);
-
-		if (!ffxiv.game_found()) {
-			if (!ffxiv.findGame())
-				continue;
+	if (config.toggle) {
+		if (RegisterHotKey(NULL, 1, config.toggle_modifier | MOD_NOREPEAT, config.toggle_key)) {
+			std::cout << "Registered a hotkey for toggling max zoom" << std::endl;
+			msg = { 0 };
 		} else {
-			ffxiv.checkValues();
+			std::cout << "Error: couldn't register a toggle hotkey" << std::endl;
+			config.toggle = false;
 		}
 	}
 
+	while (true) {
+		Sleep(1000);
 
+		if (config.toggle) {
+			if ((PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+				&& (msg.message == WM_HOTKEY)) {
 
-	/*cout << "Process base address: 0x";
-	cout << hex << base << endl;
+				ffxiv.toggleZoom();
+			}
+		}
 
-	cout << "Using static pointer address: 0x";
-	cout << settings.camera_pointer << endl;
+		if (!ffxiv.game_found())
+			if (!ffxiv.findGame())
+				continue;
 
-	cout << "Searching pointer from address: 0x";
-	cout << hex << (base + settings.camera_pointer) << endl;*/
-
+		ffxiv.checkValues();
+	}
 
 	/*
 		if (zoom_max < camera_default_max) {
@@ -80,47 +86,6 @@ int main(int argc, char *argv[])
 				camera_new_max = temp;
 			}
 		}
-	*/
-
-
-	/*
-	if (RegisterHotKey(NULL, 1, MOD_ALT | MOD_NOREPEAT, 0x42))  //0x42 is 'b'
-	{
-		cout << "Registered a hotkey for toggling max zoom (ALT+B)" << endl;
-	}
-	else
-	{
-		cout << "Error: couldn't register a system hotkey" << endl;
-	}
-
-	MSG msg = {0};
-	while (GetMessage(&msg, NULL, 0, 0) != 0)
-	{
-		if (msg.message == WM_HOTKEY)
-		{
-			if (zoom_max != camera_default_max) {
-				zoom_max = camera_default_max;
-			}
-			else
-			{
-				zoom_max = camera_new_max;
-			}
-
-			result = WriteProcessMemory(hProc, (void*)(address + offset_max), &zoom_max, (DWORD)sizeof(zoom_max), NULL);
-
-			if (result == 1) {
-				cout << "Successfully set max zoom value to " << zoom_max << endl;
-			}
-			else
-			{
-				cout << "Error: couldn't write to process memory" << endl;
-				CloseHandle(hProc);
-				cin.ignore();
-				return 1;
-			}
-
-		}
-	}
 	*/
 
 	std::cin.ignore();

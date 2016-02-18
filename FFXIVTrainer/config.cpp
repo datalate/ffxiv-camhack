@@ -4,6 +4,8 @@
 #include <iostream>
 
 
+const std::string config_file = "ffxiv.cfg";
+
 void loadDefaultConfig(Config& cfg) {
 	cfg.autostart = false;
 	cfg.hide_window = false;

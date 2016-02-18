@@ -6,7 +6,6 @@
 
 const wchar_t subkey_run[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
-
 bool registryGetAutostart() {
 	HKEY hkey = NULL;
 

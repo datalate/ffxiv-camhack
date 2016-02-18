@@ -6,6 +6,8 @@
 #include <sstream>
 
 
+const std::string settings_url = "https://raw.githubusercontent.com/datalate/ffxiv-camhack/master/ffxiv_memory.txt";
+
 size_t write_data(char *ptr, size_t size, size_t nmemb, void *userdata) {
 	std::ostringstream *stream = (std::ostringstream*)userdata;
 	size_t count = size * nmemb;
