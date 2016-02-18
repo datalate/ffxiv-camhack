@@ -10,7 +10,6 @@
 int main(int argc, char *argv[])
 {
 	Settings settings;
-	//DWORD *exitCode;
 
 
 	std::cout << "FFXIV camera zoom hack - extends max range from "
@@ -40,8 +39,6 @@ int main(int argc, char *argv[])
 
 
 
-	
-
 	/*cout << "Process base address: 0x";
 	cout << hex << base << endl;
 
@@ -51,24 +48,8 @@ int main(int argc, char *argv[])
 	cout << "Searching pointer from address: 0x";
 	cout << hex << (base + settings.camera_pointer) << endl;*/
 
-	/*if (!ReadProcessMemory(hProc, (void*)(base + settings.camera_pointer), &address, 4, 0)) {
-		cout << "Error: cannot read memory from address 0x";
-		cout << hex << (base + settings.camera_pointer) << endl;
-		CloseHandle(hProc);
-		cin.ignore();
-		return 1;
-	}
-	else
-	{
-		cout << "Camera address found: 0x";
-		cout << address << endl << endl;
 
-		ReadProcessMemory(hProc, (void*)(address + settings.offset_current), &zoom_current, 4, 0);
-		cout << "Current zoom value: " << zoom_current << endl;
-
-		ReadProcessMemory(hProc, (void*)(address + settings.offset_max), &zoom_max, 4, 0);
-		cout << "Current max zoom value: " << zoom_max << endl;
-
+	/*
 		if (zoom_max < camera_default_max) {
 			cout << "Error: max zoom value was under the default " << camera_default_max << endl;
 			cout << "Memory addresses are probably outdated. Wait for an update" << endl;
@@ -76,8 +57,9 @@ int main(int argc, char *argv[])
 			cin.ignore();
 			return 1;
 		}
+	*/
 
-		camera_new_max = camera_default_new_max;
+	/*
 		if (argc > 1) {
 			int temp = atoi(argv[1]);
 			if ((temp < 20) || (temp > 1000000)) {
@@ -88,93 +70,8 @@ int main(int argc, char *argv[])
 				camera_new_max = temp;
 			}
 		}
+	*/
 
-		if (zoom_max == camera_new_max) {
-			cout << "The camera has already been adjusted" << endl;
-			zoom_max = camera_new_max;
-		}
-		else
-		{
-			result = WriteProcessMemory(hProc, (void*)(address + settings.offset_max), &camera_new_max, (DWORD)sizeof(camera_new_max), NULL);
-
-			if (result == 1) {
-				cout << "Successfully set max zoom value to " << camera_new_max << endl;
-				zoom_max = camera_new_max;
-			}
-			else
-			{
-				cout << "Error: couldn't write to process memory" << endl;
-				CloseHandle(hProc);
-				cin.ignore();
-				return 1;
-			}
-		}
-	}*/
-
-	/*while (true) {
-		Sleep(2000);
-
-		GetExitCodeProcess(hProc, exitCode);
-		if (*exitCode == STILL_ACTIVE) {
-			cout << "process still active" << endl;
-
-			ReadProcessMemory(hProc, (void*)(address + offset_max), &zoom_max, 4, 0);
-			//cout << "Current max zoom value: " << zoom_max << endl;
-
-			if (zoom_max == camera_new_max) {
-				//cout << "The camera has already been adjusted" << endl;
-				zoom_max = camera_new_max;
-			}
-			else
-			{
-				result = WriteProcessMemory(hProc, (void*)(address + offset_max), &camera_new_max, (DWORD)sizeof(camera_new_max), NULL);
-
-				if (result == 1) {
-					cout << "Successfully set max zoom value to " << camera_new_max << endl;
-					zoom_max = camera_new_max;
-				}
-				else
-				{
-					cout << "Error: couldn't write to process memory" << endl;
-					CloseHandle(hProc);
-					cin.ignore();
-					return 1;
-				}
-			}
-
-		}
-		else
-		{
-			cout << "process not running" << endl;
-
-			HWND hwnd = FindWindowA(0, window_name);
-
-			if (hwnd == 0) {
-				cout << "Error: cannot find window" << endl;
-				continue;
-			}
-
-			CloseHandle(hProc);
-
-			GetWindowThreadProcessId(hwnd, &pid);
-
-			HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-
-			if (hProc == NULL) {
-				cout << "Error: cannot open process" << endl;
-				cin.ignore();
-				return 1;
-			}
-
-			DWORD_PTR base = GetModuleBase(hProc, "ffxiv_dx11.exe");
-
-			if (base == -1) {
-				cout << "Error: unable to find process base address" << endl;
-				cin.ignore();
-				return 1;
-			}
-		}
-	}*/
 
 	/*
 	if (RegisterHotKey(NULL, 1, MOD_ALT | MOD_NOREPEAT, 0x42))  //0x42 is 'b'
@@ -219,4 +116,3 @@ int main(int argc, char *argv[])
 	std::cin.ignore();
     return 0;
 }
-
