@@ -9,7 +9,7 @@ const wchar_t subkey_run[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run
 bool registryGetAutostart() {
 	HKEY hkey = NULL;
 
-	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, subkey_run, 0, NULL, 0,
+	if (RegCreateKeyExW(HKEY_LOCAL_MACHINE, subkey_run, 0, NULL, 0,
 		KEY_READ, NULL, &hkey, NULL) != ERROR_SUCCESS) {
 
 		std::cout << "Error: couldn't create registry key handle" << std::endl;
@@ -49,7 +49,7 @@ bool registrySetAutostart(bool start, bool hide) {
 
 	std::cout << "Trying to update registry autostart value..." << std::endl;
 
-	if (RegCreateKeyEx(HKEY_LOCAL_MACHINE, subkey_run, 0, NULL, 0,
+	if (RegCreateKeyExW(HKEY_LOCAL_MACHINE, subkey_run, 0, NULL, 0,
 		KEY_SET_VALUE, NULL, &hkey, NULL) != ERROR_SUCCESS) {
 
 		std::cout << "Error: couldn't create registry key handle" << std::endl;
@@ -78,7 +78,7 @@ bool registrySetAutostart(bool start, bool hide) {
 
 		std::cout << "Successfully enabled autostart!" << std::endl;
 	} else {
-		if (RegDeleteKeyValue(hkey, NULL, TEXT("ffxiv-camhack")) != ERROR_SUCCESS) {
+		if (RegDeleteKeyValueW(hkey, NULL, TEXT("ffxiv-camhack")) != ERROR_SUCCESS) {
 			std::cout << "Error: couldn't remove key from registry" << std::endl;
 			RegCloseKey(hkey);
 			return false;

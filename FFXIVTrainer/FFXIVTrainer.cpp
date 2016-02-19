@@ -7,11 +7,36 @@
 
 #include <iostream>
 
+bool updateWorkingDir() {
+	wchar_t working_dir[MAX_PATH];
+	wchar_t* cutoff = NULL;
+	DWORD path_len = GetModuleFileNameW(NULL, working_dir, MAX_PATH - 1);
+
+	if (path_len == 0)
+		return false;
+
+	cutoff = wcsrchr(working_dir, '\\');
+	*(cutoff) = '\0';
+
+	if (SetCurrentDirectoryW(working_dir) == 0)
+		return false;
+
+	return true;
+}
+
 int main(int argc, char *argv[])
 {
 	Settings settings;
 	Config config;
 	MSG msg;
+
+	if (!updateWorkingDir()) {
+		std::cout << "Error: Unable to update working directory, cannot continue!" << std::endl
+			<< "Try running the process as an administrator or something" << std::endl;
+
+		std::cin.ignore();
+		return 1;
+	}
 
 	loadConfig(config);
 
