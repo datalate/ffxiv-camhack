@@ -1,4 +1,4 @@
-pointer:16BF8C0
-offset_current:0x118
-offset_max:0x120
-version:3.55
+pointer:1785EB0
+offset_current:0x128
+offset_max:0x130
+version:4.0
