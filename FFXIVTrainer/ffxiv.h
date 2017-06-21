@@ -16,7 +16,7 @@ static const float zoom_max_default = 20;
 class FFXIV
 {
 public:
-	FFXIV(Settings& settings, float zoom_value);
+	FFXIV(Settings& settings, float zoom_value, bool debug);
 	~FFXIV();
 
 	bool game_found();
@@ -39,13 +39,13 @@ private:
 	float zoom_max_;
 	float zoom_max_custom_;
 
+	bool debug_;
 	bool game_found_;
 	bool firstrun_;
 	bool disabled_;
 
 	bool calculateAddresses();
 	void checkGameStatus();
-
 };
 
 #endif

@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	FFXIV ffxiv(settings, (float)config.max_zoom);
+	FFXIV ffxiv(settings, (float)config.max_zoom, config.debug);
 
 	if (config.toggle) {
 		if (RegisterHotKey(NULL, 1, config.toggle_modifier | MOD_NOREPEAT, config.toggle_key)) {

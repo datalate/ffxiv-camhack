@@ -9,6 +9,7 @@ const std::string config_file = "ffxiv.cfg";
 void loadDefaultConfig(Config& cfg) {
 	cfg.autostart = false;
 	cfg.hide_window = false;
+	cfg.debug = false;
 
 	cfg.max_zoom = 100;
 	
@@ -38,6 +39,7 @@ bool loadConfig(Config& cfg) {
 
 	if (cfg_file.lookupValue("autostart", cfg.autostart)
 		&& cfg_file.lookupValue("hide_window", cfg.hide_window)
+		&& cfg_file.lookupValue("debug", cfg.debug)
 		&& cfg_file.lookupValue("max_zoom", cfg.max_zoom)
 		&& cfg_file.lookupValue("toggle", cfg.toggle)
 		&& cfg_file.lookupValue("toggle_key", cfg.toggle_key)

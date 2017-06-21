@@ -33,7 +33,9 @@ namespace {
 	}
 }
 
-FFXIV::FFXIV(Settings& settings, float zoom_value): settings_(&settings), zoom_max_custom_(zoom_value) {
+FFXIV::FFXIV(Settings& settings, float zoom_value, bool debug):
+	settings_(&settings), zoom_max_custom_(zoom_value), debug_(debug) {
+
 	game_found_ = false;
 	firstrun_ = true;
 	disabled_ = false;
@@ -118,9 +120,11 @@ bool FFXIV::calculateAddresses() {
 		return false;
 	}
 
-	//std::cout << "Camera address found: 0x";
-	//std::cout << camera_address << std::endl << std::endl;
-
+	if (debug_) {
+		std::cout << "Camera address found: 0x";
+		std::cout << camera_address << std::endl << std::endl;
+	}
+	
 	address_zoom_current_ = camera_address + settings_->offset_current;
 	address_zoom_max_ = camera_address + settings_->offset_max;
 
@@ -160,10 +164,12 @@ void FFXIV::checkValues() {
 		return;
 
 	ReadProcessMemory(proc_handle_, (void*)address_zoom_current_, &zoom_current_, 4, 0);
-	//std::cout << "Current zoom value: " << zoom_current_ << std::endl;
+	if (debug_)
+		std::cout << "Current zoom value: " << zoom_current_ << std::endl;
 
 	ReadProcessMemory(proc_handle_, (void*)address_zoom_max_, &zoom_max_, 4, 0);
-	//std::cout << "Current max zoom value: " << zoom_max_ << std::endl;
+	if (debug_)
+		std::cout << "Current max zoom value: " << zoom_max_ << std::endl;
 
 	if (disabled_)
 		return;
@@ -179,6 +185,9 @@ void FFXIV::checkValues() {
 
 		if (result != 1) {
 			std::cout << "Error: couldn't write to process memory" << std::endl;
+			if (debug_) {
+				std::cout << "WriteProcessMemory(): " << GetLastError() << std::endl;
+			}
 			return;
 		}
 
