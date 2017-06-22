@@ -108,21 +108,22 @@ bool FFXIV::calculateAddresses() {
 	if (!game_found_)
 		return false;
 
-	DWORD camera_address;
+	DWORD_PTR read_address = base_address_ + settings_->camera_pointer;
+	DWORD_PTR camera_address;
 
-	if (!ReadProcessMemory(proc_handle_, (void*)(base_address_ + settings_->camera_pointer),
-						   &camera_address, 4, 0)) {
+	if (!ReadProcessMemory(proc_handle_, (LPVOID)read_address,
+						   &camera_address, sizeof(camera_address), NULL)) {
 
 		std::cout << "Error: cannot read memory from address 0x"
-				  << std::hex << (base_address_ + settings_->camera_pointer) << std::endl;
+				  << std::hex << read_address << std::endl;
 
 		game_found_ = false;
 		return false;
 	}
 
 	if (debug_) {
-		std::cout << "Camera address found: 0x";
-		std::cout << camera_address << std::endl << std::endl;
+		std::cout << "Camera address found: 0x"
+				  << std::hex << camera_address << std::endl << std::endl;
 	}
 	
 	address_zoom_current_ = camera_address + settings_->offset_current;
@@ -163,11 +164,13 @@ void FFXIV::checkValues() {
 	if (!game_found_)
 		return;
 
-	ReadProcessMemory(proc_handle_, (void*)address_zoom_current_, &zoom_current_, 4, 0);
+	ReadProcessMemory(proc_handle_, (LPVOID)address_zoom_current_,
+		              &zoom_current_, sizeof(zoom_current_), NULL);
 	if (debug_)
 		std::cout << "Current zoom value: " << zoom_current_ << std::endl;
 
-	ReadProcessMemory(proc_handle_, (void*)address_zoom_max_, &zoom_max_, 4, 0);
+	ReadProcessMemory(proc_handle_, (LPVOID)address_zoom_max_,
+					  &zoom_max_, sizeof(zoom_max_), NULL);
 	if (debug_)
 		std::cout << "Current max zoom value: " << zoom_max_ << std::endl;
 
@@ -177,11 +180,14 @@ void FFXIV::checkValues() {
 	if (zoom_max_ == zoom_max_custom_) {
 		if (firstrun_)
 			std::cout << "The camera has already been adjusted" << std::endl;
-		else return;
-	} else {
+		else
+			return;
+	}
+	else {
 		std::cout << "Camera not yet adjusted, trying to do that now..." << std::endl;
-		int result = WriteProcessMemory(proc_handle_, (void*)address_zoom_max_,
-									    &zoom_max_custom_, (DWORD)sizeof(zoom_max_custom_), NULL);
+
+		int result = WriteProcessMemory(proc_handle_, (LPVOID)address_zoom_max_,
+									    &zoom_max_custom_, sizeof(zoom_max_custom_), NULL);
 
 		if (result != 1) {
 			std::cout << "Error: couldn't write to process memory" << std::endl;
@@ -206,17 +212,19 @@ void FFXIV::toggleZoom() {
 		return;
 
 	int result;
-	ReadProcessMemory(proc_handle_, (void*)address_zoom_max_, &zoom_max_, 4, 0);
+	ReadProcessMemory(proc_handle_, (LPVOID)address_zoom_max_,
+					  &zoom_max_, sizeof(zoom_max_), NULL);
 
 	if (zoom_max_ == zoom_max_custom_) {
 		float temp = zoom_max_default;
 
-		result = WriteProcessMemory(proc_handle_, (void*)address_zoom_max_,
-									&temp, (DWORD)sizeof(temp), NULL);
+		result = WriteProcessMemory(proc_handle_, (LPVOID)address_zoom_max_,
+									&temp, sizeof(temp), NULL);
 		disabled_ = true;
-	} else {
-		result = WriteProcessMemory(proc_handle_, (void*)address_zoom_max_,
-									&zoom_max_custom_, (DWORD)sizeof(zoom_max_custom_), NULL);
+	}
+	else {
+		result = WriteProcessMemory(proc_handle_, (LPVOID)address_zoom_max_,
+									&zoom_max_custom_, sizeof(zoom_max_custom_), NULL);
 		disabled_ = false;
 	}
 

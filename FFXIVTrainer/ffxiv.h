@@ -29,11 +29,11 @@ private:
 	Settings* settings_;
 
 	HANDLE proc_handle_;
-	DWORD_PTR base_address_;
 	DWORD exitCode;
 
-	DWORD address_zoom_current_;
-	DWORD address_zoom_max_;
+	DWORD_PTR base_address_;
+	DWORD_PTR address_zoom_current_;
+	DWORD_PTR address_zoom_max_;
 
 	float zoom_current_;
 	float zoom_max_;
