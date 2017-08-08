@@ -192,7 +192,7 @@ void FFXIV::checkValues() {
 		if (result != 1) {
 			std::cout << "Error: couldn't write to process memory" << std::endl;
 			if (debug_) {
-				std::cout << "WriteProcessMemory(): " << GetLastError() << std::endl;
+				std::cout << "WriteProcessMemory(): Error code " << GetLastError() << std::endl;
 			}
 			return;
 		}
