@@ -1,4 +1,4 @@
 pointer:0x199C420
 offset_current:0x118
 offset_max:0x120
-version:4.3
+version:4.4
